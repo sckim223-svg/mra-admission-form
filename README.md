@@ -62,3 +62,20 @@
 - 제출 시 `apply.js`에서 필수값/기타 입력값을 확인합니다.
 - 제출 중에는 버튼을 비활성화하고 `제출 중입니다...` 문구를 표시해 중복 제출을 방지합니다.
 - `success.html` 자동 이동은 사용하지 않습니다.
+
+## 7) Google Apps Script 파라미터 매핑 점검
+
+Google Apps Script에서 `e.parameter`(또는 `p`)로 읽는 키와 폼 `name`이 정확히 일치해야 합니다.
+
+- `p.name` → 성명
+- `p.phone` → 휴대전화
+- `p.email` → 이메일
+- `p.birth` → 생년월일
+- `p.company` → 소속 중개사무소 또는 회사명
+- `p.license` → 공인중개사 자격 여부
+- `p.degree` → 4년제 대학 졸업(예정) 여부
+- `p.motivation` → 지원동기
+- `p.motivationOther` → 기타 사유 입력값
+- `p.privacy` → 개인정보 동의
+
+특히 구글시트 열 제목 `4년제대학졸업여부`에는 `p.degree` 값을 저장하도록 Apps Script를 유지하세요.
