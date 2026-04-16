@@ -28,7 +28,7 @@
 
 1. `apply.html` 파일을 열어 `<form>` 태그의 `action` 값을 찾습니다.
 2. `action` 값을 아래 실제 웹앱 URL로 설정합니다.
-   - `https://script.google.com/macros/s/AKfycbzCN_Sd-408GyPCrHshyPPskemsMvzllK79299F4jmtQEv4VaJKpPmp6OTzkZf8thyaXQ/exec`
+   - `https://script.google.com/macros/s/AKfycbyRIHr9rGe9WWhpFjM5RlEjt5OV4UJJxdtDuRBd-fTkTpfBO-oP8GkRGs74WEbS4H29/exec`
 3. 저장 후 다시 배포(또는 파일 반영)합니다.
 
 ## 4) 관리자(구글시트) 저장 방식
