@@ -1,107 +1,114 @@
-/**
- * MRA 온라인 입학지원 운영용 Google Apps Script (최종본)
- *
- * 동작 순서
- * 1) 'MRA 지원서' 스프레드시트의 '지원서' 탭에 데이터 저장
- * 2) sckim223@gmail.com 으로 접수 알림 메일 발송
- * 3) Vercel 완료 페이지로 즉시 리디렉션
- */
-function doPost(e) {
-  var p = e && e.parameter ? e.parameter : {};
+const SPREADSHEET_ID = '여기에_구글시트_ID를_넣으십시오';
+const SHEET_NAME = '지원서';
+const SUCCESS_URL = 'https://mra-admission-form.vercel.app/success.html';
+const FORM_URL = 'https://mra-admission-form.vercel.app/apply.html';
+const ALERT_EMAIL = 'sckim223@gmail.com';
 
-  var SPREADSHEET_NAME = 'MRA 지원서';
-  var SHEET_NAME = '지원서';
-  var NOTIFY_EMAIL = 'sckim223@gmail.com';
-  var SUCCESS_URL = 'https://mra-admission-form.vercel.app/success.html';
-
-  var ss = getSpreadsheetByName_(SPREADSHEET_NAME);
-  var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
-
-  ensureHeader_(sheet);
-
-  var submittedAt = new Date();
-  var submittedAtText = Utilities.formatDate(submittedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
-
-  // 1) 시트 저장
-  sheet.appendRow([
-    submittedAtText,
-    valueOrEmpty_(p.name),
-    valueOrEmpty_(p.phone),
-    valueOrEmpty_(p.email),
-    valueOrEmpty_(p.birth),
-    valueOrEmpty_(p.company),
-    valueOrEmpty_(p.license),
-    valueOrEmpty_(p.degree),
-    valueOrEmpty_(p.motivation),
-    valueOrEmpty_(p.motivationOther),
-    valueOrEmpty_(p.privacy),
-  ]);
-
-  // 2) 접수 알림 메일 발송
-  var applicantName = valueOrEmpty_(p.name);
-  var applicantPhone = valueOrEmpty_(p.phone);
-  var subject = '[MRA 지원서 접수] ' + applicantName + ' / ' + applicantPhone;
-
-  var body = [
-    '[MRA 지원서 접수 알림]',
-    '',
-    '접수일시: ' + submittedAtText,
-    '성명: ' + applicantName,
-    '휴대전화: ' + applicantPhone,
-    '이메일: ' + valueOrEmpty_(p.email),
-    '생년월일: ' + valueOrEmpty_(p.birth),
-    '소속: ' + valueOrEmpty_(p.company),
-    '공인중개사자격: ' + valueOrEmpty_(p.license),
-    '4년제 대학 졸업(예정) 여부: ' + valueOrEmpty_(p.degree),
-    '지원동기: ' + valueOrEmpty_(p.motivation),
-    '기타 사유: ' + valueOrEmpty_(p.motivationOther),
-    '개인정보동의: ' + valueOrEmpty_(p.privacy),
-  ].join('\n');
-
-  MailApp.sendEmail({
-    to: NOTIFY_EMAIL,
-    subject: subject,
-    body: body,
-  });
-
-  // 3) Vercel 완료 화면으로 리디렉션
+function doGet(e) {
   return HtmlService.createHtmlOutput(
-    '<!doctype html><html><head><meta charset="utf-8"><script>location.replace(' +
-      JSON.stringify(SUCCESS_URL) +
-      ');</script></head><body></body></html>'
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+      '<meta http-equiv="refresh" content="0; url=' + FORM_URL + '">' +
+      '<script>location.replace("' + FORM_URL + '");</script>' +
+      '</head><body>이동 중입니다.</body></html>'
   );
 }
 
-function ensureHeader_(sheet) {
-  if (sheet.getLastRow() > 0) {
-    return;
-  }
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+    if (!sheet) throw new Error('시트 "' + SHEET_NAME + '"를 찾을 수 없습니다.');
 
-  sheet.appendRow([
-    '접수일시',
-    '성명',
-    '휴대전화',
-    '이메일',
-    '생년월일',
-    '소속',
-    '공인중개사자격',
-    '4년제대학졸업여부',
-    '지원동기',
-    '기타사유',
-    '개인정보동의',
-  ]);
+    const submittedAt = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
+
+    const name = getParam_(e, 'name');
+    const phone = getParam_(e, 'phone');
+    const email = getParam_(e, 'email');
+    const birth = getParam_(e, 'birth');
+    const organization = getParamAny_(e, ['organization', 'company']);
+    const license = getParam_(e, 'license');
+    const graduation = getParamAny_(e, ['graduation', 'degree']);
+    const motivation = getParam_(e, 'motivation');
+    const otherReason = getParamAny_(e, ['otherReason', 'motivationOther']);
+    const privacyConsent = getParamAny_(e, ['privacyConsent', 'privacy']);
+
+    sheet.appendRow([
+      submittedAt,
+      name,
+      phone,
+      email,
+      birth,
+      organization,
+      license,
+      graduation,
+      motivation,
+      otherReason,
+      privacyConsent,
+    ]);
+
+    const subject = '[MRA 지원서 접수] ' + (name || '이름없음') + ' / ' + (phone || '전화번호없음');
+
+    const body =
+      'MRA 온라인 입학지원서가 접수되었습니다.\n\n' +
+      '접수일시: ' + submittedAt + '\n' +
+      '성명: ' + name + '\n' +
+      '휴대전화: ' + phone + '\n' +
+      '이메일: ' + email + '\n' +
+      '생년월일: ' + birth + '\n' +
+      '소속: ' + organization + '\n' +
+      '공인중개사자격: ' + license + '\n' +
+      '4년제 대학 졸업(예정) 여부: ' + graduation + '\n' +
+      '지원동기: ' + motivation + '\n' +
+      '기타 사유: ' + otherReason + '\n' +
+      '개인정보동의: ' + privacyConsent + '\n';
+
+    MailApp.sendEmail({
+      to: ALERT_EMAIL,
+      subject: subject,
+      body: body,
+      name: 'MRA 온라인 입학지원 시스템',
+      replyTo: email || undefined,
+    });
+
+    return HtmlService.createHtmlOutput(
+      '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+        '<meta http-equiv="refresh" content="0; url=' + SUCCESS_URL + '">' +
+        '<script>location.replace("' + SUCCESS_URL + '");</script>' +
+        '</head><body>접수 완료. 이동 중입니다.</body></html>'
+    );
+  } catch (error) {
+    return HtmlService.createHtmlOutput(
+      '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' +
+        '<h2>접수 처리 중 오류가 발생했습니다.</h2>' +
+        '<p>' + escapeHtml_(String(error)) + '</p>' +
+        '</body></html>'
+    );
+  }
 }
 
-function getSpreadsheetByName_(spreadsheetName) {
-  var files = DriveApp.getFilesByName(spreadsheetName);
-  if (!files.hasNext()) {
-    throw new Error('스프레드시트를 찾을 수 없습니다: ' + spreadsheetName);
+function getParam_(e, key) {
+  if (e && e.parameter && e.parameter[key] !== undefined) {
+    return String(e.parameter[key]).trim();
   }
-
-  var file = files.next();
-  return SpreadsheetApp.openById(file.getId());
+  return '';
 }
 
-function valueOrEmpty_(v) {
-  return v ? String(v).trim() : '';
+function getParamAny_(e, keys) {
+  for (var i = 0; i < keys.length; i += 1) {
+    var val = getParam_(e, keys[i]);
+    if (val !== '') return val;
+  }
+  return '';
+}
+
+function escapeHtml_(text) {
+  return String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function testMailPermission_() {
+  MailApp.sendEmail('sckim223@gmail.com', 'MRA 메일 권한 테스트', '권한 승인 테스트입니다.');
 }
