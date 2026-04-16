@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>온라인 지원서 작성</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="card">
+        <h1>온라인 지원서 작성</h1>
+        <p class="help-text">아래 항목을 입력한 후 제출 버튼을 눌러주세요.</p>
+        <p class="eligibility-note">
+          입학지원 자격: <strong>공인중개사 자격 보유자만 지원 가능</strong>
+        </p>
+
+        <form class="application-form" action="success.html" method="get" enctype="multipart/form-data">
+          <div class="form-field">
+            <label for="name">성명</label>
+            <input id="name" name="name" type="text" required />
+          </div>
+
+          <div class="form-field">
+            <label for="phone">휴대전화</label>
+            <input id="phone" name="phone" type="tel" placeholder="예: 010-1234-5678" required />
+          </div>
+
+          <div class="form-field">
+            <label for="email">이메일</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+
+          <div class="form-field">
+            <label for="birth">생년월일</label>
+            <input id="birth" name="birth" type="date" required />
+          </div>
+
+          <div class="form-field">
+            <label for="company">소속 중개사무소 또는 회사명</label>
+            <input id="company" name="company" type="text" required />
+          </div>
+
+          <div class="form-field">
+            <label for="license">공인중개사 자격 여부</label>
+            <select id="license" name="license" required>
+              <option value="">선택해 주세요</option>
+              <option value="보유">보유</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="experience">관련 경력</label>
+            <textarea id="experience" name="experience" rows="4" required></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="motivation">지원동기</label>
+            <textarea id="motivation" name="motivation" rows="4" required></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="intro">자기소개</label>
+            <textarea id="intro" name="intro" rows="5" required></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="resume">지원서 파일 업로드</label>
+            <input id="resume" name="resume" type="file" required />
+          </div>
+
+          <label class="checkbox-row" for="privacy">
+            <input id="privacy" name="privacy" type="checkbox" required />
+            개인정보 수집 및 이용에 동의합니다.
+          </label>
+
+          <button class="cta-button" type="submit">지원서 제출하기</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
