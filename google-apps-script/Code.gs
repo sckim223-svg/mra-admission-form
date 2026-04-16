@@ -1,69 +1,61 @@
 /**
- * MRA 온라인 입학지원 수신용 Google Apps Script 예시 코드
- * - Google Sheet 저장
- * - 저장 직후 알림 메일 발송
+ * MRA 온라인 입학지원 운영용 Google Apps Script (최종본)
+ *
+ * 동작 순서
+ * 1) 'MRA 지원서' 스프레드시트의 '지원서' 탭에 데이터 저장
+ * 2) sckim223@gmail.com 으로 접수 알림 메일 발송
+ * 3) Vercel 완료 페이지로 즉시 리디렉션
  */
 function doPost(e) {
-  var p = e.parameter;
+  var p = e && e.parameter ? e.parameter : {};
 
-  // 실제 사용 시 아래를 운영 시트 정보로 교체하세요.
-  var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
+  var SPREADSHEET_NAME = 'MRA 지원서';
   var SHEET_NAME = '지원서';
   var NOTIFY_EMAIL = 'sckim223@gmail.com';
+  var SUCCESS_URL = 'https://mra-admission-form.vercel.app/success.html';
 
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var ss = getSpreadsheetByName_(SPREADSHEET_NAME);
   var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
 
-  // 헤더가 없으면 생성
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow([
-      '접수일시',
-      '성명',
-      '휴대전화',
-      '이메일',
-      '생년월일',
-      '소속',
-      '공인중개사자격',
-      '4년제대학졸업여부',
-      '지원동기',
-      '기타사유',
-      '개인정보동의',
-    ]);
-  }
+  ensureHeader_(sheet);
 
   var submittedAt = new Date();
+  var submittedAtText = Utilities.formatDate(submittedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
 
-  // 시트 저장 (기존 저장 기능 유지)
+  // 1) 시트 저장
   sheet.appendRow([
-    submittedAt,
-    p.name || '',
-    p.phone || '',
-    p.email || '',
-    p.birth || '',
-    p.company || '',
-    p.license || '',
-    p.degree || '',
-    p.motivation || '',
-    p.motivationOther || '',
-    p.privacy || '',
+    submittedAtText,
+    valueOrEmpty_(p.name),
+    valueOrEmpty_(p.phone),
+    valueOrEmpty_(p.email),
+    valueOrEmpty_(p.birth),
+    valueOrEmpty_(p.company),
+    valueOrEmpty_(p.license),
+    valueOrEmpty_(p.degree),
+    valueOrEmpty_(p.motivation),
+    valueOrEmpty_(p.motivationOther),
+    valueOrEmpty_(p.privacy),
   ]);
 
-  // 저장 직후 알림 메일 발송
-  var subject = '[MRA 지원서 접수] 새 지원서가 접수되었습니다';
+  // 2) 접수 알림 메일 발송
+  var applicantName = valueOrEmpty_(p.name);
+  var applicantPhone = valueOrEmpty_(p.phone);
+  var subject = '[MRA 지원서 접수] ' + applicantName + ' / ' + applicantPhone;
+
   var body = [
     '[MRA 지원서 접수 알림]',
     '',
-    '성명: ' + (p.name || ''),
-    '휴대전화: ' + (p.phone || ''),
-    '이메일: ' + (p.email || ''),
-    '생년월일: ' + (p.birth || ''),
-    '소속: ' + (p.company || ''),
-    '공인중개사자격: ' + (p.license || ''),
-    '4년제 대학 졸업(예정) 여부: ' + (p.degree || ''),
-    '지원동기: ' + (p.motivation || ''),
-    '기타사유: ' + (p.motivationOther || ''),
-    '개인정보동의: ' + (p.privacy || ''),
-    '제출일시: ' + Utilities.formatDate(submittedAt, 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'),
+    '접수일시: ' + submittedAtText,
+    '성명: ' + applicantName,
+    '휴대전화: ' + applicantPhone,
+    '이메일: ' + valueOrEmpty_(p.email),
+    '생년월일: ' + valueOrEmpty_(p.birth),
+    '소속: ' + valueOrEmpty_(p.company),
+    '공인중개사자격: ' + valueOrEmpty_(p.license),
+    '4년제 대학 졸업(예정) 여부: ' + valueOrEmpty_(p.degree),
+    '지원동기: ' + valueOrEmpty_(p.motivation),
+    '기타 사유: ' + valueOrEmpty_(p.motivationOther),
+    '개인정보동의: ' + valueOrEmpty_(p.privacy),
   ].join('\n');
 
   MailApp.sendEmail({
@@ -72,9 +64,44 @@ function doPost(e) {
     body: body,
   });
 
-  // 완료 페이지로 리다이렉트하고 싶다면 아래 URL을 실제 프론트엔드 success URL로 교체하세요.
-  var SUCCESS_URL = 'https://YOUR_VERCEL_DOMAIN/success';
+  // 3) Vercel 완료 화면으로 리디렉션
   return HtmlService.createHtmlOutput(
-    '<script>location.replace(' + JSON.stringify(SUCCESS_URL) + ');</script>'
+    '<!doctype html><html><head><meta charset="utf-8"><script>location.replace(' +
+      JSON.stringify(SUCCESS_URL) +
+      ');</script></head><body></body></html>'
   );
+}
+
+function ensureHeader_(sheet) {
+  if (sheet.getLastRow() > 0) {
+    return;
+  }
+
+  sheet.appendRow([
+    '접수일시',
+    '성명',
+    '휴대전화',
+    '이메일',
+    '생년월일',
+    '소속',
+    '공인중개사자격',
+    '4년제대학졸업여부',
+    '지원동기',
+    '기타사유',
+    '개인정보동의',
+  ]);
+}
+
+function getSpreadsheetByName_(spreadsheetName) {
+  var files = DriveApp.getFilesByName(spreadsheetName);
+  if (!files.hasNext()) {
+    throw new Error('스프레드시트를 찾을 수 없습니다: ' + spreadsheetName);
+  }
+
+  var file = files.next();
+  return SpreadsheetApp.openById(file.getId());
+}
+
+function valueOrEmpty_(v) {
+  return v ? String(v).trim() : '';
 }
