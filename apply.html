@@ -16,7 +16,12 @@
           입학지원 자격: <strong>공인중개사 자격 보유자만 지원 가능</strong>
         </p>
 
-        <form id="applicationForm" class="application-form" novalidate>
+        <form
+          id="applicationForm"
+          class="application-form"
+          action="https://script.google.com/macros/s/AKfycbzCN_Sd-408GyPCrHshyPPskemsMvzllK79299F4jmtQEv4VaJKpPmp6OTzkZf8thyaXQ/exec"
+          method="POST"
+        >
           <div class="form-field">
             <label for="name">성명</label>
             <input id="name" name="name" type="text" required />
@@ -76,7 +81,7 @@
 
           <label class="checkbox-row" for="privacy">
             <input id="privacy" name="privacy" type="checkbox" required />
-            개인정보 수집 및 이용에 동의합니다. (지원서 이메일 접수 및 입학 전형 심사 안내 목적)
+            개인정보 수집 및 이용에 동의합니다. (지원서 구글시트 접수 및 입학 전형 심사 안내 목적)
           </label>
 
           <p id="formMessage" class="form-message" role="alert" aria-live="polite"></p>

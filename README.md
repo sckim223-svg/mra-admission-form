@@ -1,66 +1,41 @@
-# 명지대학교 부동산대학원 MRA 입학지원 페이지 (MVP)
+# 명지대학교 부동산대학원 MRA 입학지원 페이지 (Google Sheet 접수 버전)
 
 중장년층도 쉽게 입력할 수 있도록 큰 글자와 단순한 화면으로 구성한 온라인 지원 페이지입니다.
 
 ## 파일 구조 (단순 구성)
 
 - `index.html` : 메인 안내 페이지
-- `apply.html` : 온라인 지원서 입력 페이지
-- `apply.js` : 지원서 제출(fetch), 기타 입력칸 표시 제어
-- `success.html` : 접수 완료 페이지
+- `apply.html` : 온라인 지원서 입력 페이지 (Google Apps Script 웹앱으로 직접 POST)
+- `apply.js` : 지원동기 `기타` 입력칸 표시 제어 + 제출 중 버튼 비활성화
+- `success.html` : 참고용 완료 페이지(강제 이동 없음)
 - `styles.css` : 공통 스타일
-- `api/apply.js` : Vercel 서버리스 API(관리자 이메일 발송)
-- `vercel.json` : Vercel 설정
+- `vercel.json` : 정적 배포 설정
 
 ## 1) 로컬 실행 방법 (초보자용)
 
-### A. 화면만 빠르게 확인하기
-1. 프로젝트 폴더에서 `index.html`을 더블클릭합니다.
-2. 브라우저에서 페이지가 열리면 화면 확인은 가능합니다.
-3. 단, 이 방법은 `/api/apply`가 없어 메일 전송은 동작하지 않습니다.
-
-### B. 메일 전송까지 테스트하기(권장)
-1. [Node.js LTS](https://nodejs.org/)를 설치합니다.
-2. 터미널에서 프로젝트 폴더로 이동합니다.
-3. Vercel CLI 설치:
-   - `npm i -g vercel`
-4. 로컬 서버 실행:
-   - `vercel dev`
-5. 안내된 주소(예: `http://localhost:3000`)에서 지원서를 제출해 동작을 확인합니다.
+1. 프로젝트 폴더에서 `index.html` 파일을 더블클릭합니다.
+2. 브라우저에서 화면을 확인합니다.
+3. 실제 저장 테스트는 `apply.html`의 form action에 Google Apps Script 웹앱 URL을 넣은 뒤 진행합니다.
 
 ## 2) Vercel 배포 방법 (초보자용)
 
-1. 이 프로젝트를 GitHub 저장소에 업로드합니다.
+1. 프로젝트를 GitHub에 업로드합니다.
 2. [Vercel](https://vercel.com)에서 **Add New → Project**를 선택합니다.
-3. 저장소를 Import 합니다.
-4. 아래 환경변수를 먼저 등록한 뒤 Deploy 합니다.
-5. 배포 URL에서 지원서 제출 및 이메일 수신을 확인합니다.
+3. 저장소를 Import 후 Deploy 합니다.
+4. 배포된 URL에서 지원서 제출 동작을 확인합니다.
 
-## 3) 환경변수 등록 방법
+## 3) Google Apps Script 웹앱 URL 설정 방법
 
-Vercel 프로젝트의 **Settings → Environment Variables**에서 아래 값을 등록하세요.
+1. `apply.html` 파일을 열어 `<form>` 태그의 `action` 값을 찾습니다.
+2. `action` 값을 아래 실제 웹앱 URL로 설정합니다.
+   - `https://script.google.com/macros/s/AKfycbzCN_Sd-408GyPCrHshyPPskemsMvzllK79299F4jmtQEv4VaJKpPmp6OTzkZf8thyaXQ/exec`
+3. 저장 후 다시 배포(또는 파일 반영)합니다.
 
-- `ADMIN_EMAIL` : 지원서를 받을 관리자 이메일
-- `RESEND_API_KEY` : Resend 메일 API 키
-- `MAIL_FROM` : 발신자 이메일(선택)
-  - 예시: `MRA 지원서 <onboarding@resend.dev>`
+## 4) 관리자(구글시트) 저장 방식
 
-### 로컬 환경변수 예시 (`.env.local`)
-
-```bash
-ADMIN_EMAIL=admin@example.com
-RESEND_API_KEY=re_xxxxxxxxxxxxx
-MAIL_FROM=MRA 지원서 <onboarding@resend.dev>
-```
-
-`.env.local` 저장 후 `vercel dev`를 다시 실행하세요.
-
-## 4) 관리자 이메일 설정 방법
-
-1. 실제 수신 담당자 이메일을 확인합니다.
-2. 해당 주소를 `ADMIN_EMAIL`로 등록합니다.
-3. 테스트 지원서를 제출합니다.
-4. 수신함/스팸함에서 메일 도착 여부를 확인합니다.
+- 이 버전은 메일 발송(Resend)을 사용하지 않습니다.
+- 지원서 데이터는 Google Apps Script 웹앱으로 일반 HTML `POST` 방식으로 전송됩니다.
+- 실제 시트 저장 로직은 Google Apps Script 쪽 코드에서 처리합니다.
 
 ## 5) 지원폼 최종 항목
 
@@ -81,22 +56,9 @@ MAIL_FROM=MRA 지원서 <onboarding@resend.dev>
 4. 네트워크 형성
 5. 기타 (선택 시 기타 사유 입력칸 노출)
 
-## 6) 관리자 이메일 본문에 포함되는 항목
+## 6) 참고
 
-- 성명
-- 휴대전화
-- 이메일
-- 생년월일
-- 소속 중개사무소 또는 회사명
-- 공인중개사 자격 여부
-- 4년제 대학 졸업(예정) 여부
-- 지원동기
-- 기타 사유 입력값(있는 경우)
-- 제출 일시
-
-## 7) 참고
-
-- 본 과정은 **공인중개사 자격 보유자만 지원 가능**하도록 안내/검증합니다.
-- 제출 성공 시 `success.html`로 이동합니다.
-- 제출 실패 시 한글 오류 메시지를 화면에 표시합니다.
+- 본 과정은 **공인중개사 자격 보유자만 지원 가능**하도록 안내합니다.
+- 제출 시 `apply.js`에서 필수값/기타 입력값을 확인합니다.
 - 제출 중에는 버튼을 비활성화하고 `제출 중입니다...` 문구를 표시해 중복 제출을 방지합니다.
+- `success.html` 자동 이동은 사용하지 않습니다.
