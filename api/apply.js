@@ -36,7 +36,6 @@ module.exports = async function handler(req, res) {
       '실무역량 강화',
       '사업화·수익모델 확장',
       '네트워크 형성',
-      '명지대학교 대학원 진학 희망',
       '기타',
     ];
 
