@@ -69,13 +69,14 @@ function doPost(e) {
     });
 
     // 3) 접수 완료 최종 화면 출력
+    const safeName = escapeHtml_(name || '지원자');
     return HtmlService.createHtmlOutput(
       '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>접수 완료</title>' +
         '<style>body{font-family:"Malgun Gothic",sans-serif;line-height:1.8;padding:28px;color:#111827;}h1{font-size:28px;margin:0 0 14px;}p{font-size:20px;margin:0 0 8px;} .tel{font-weight:800;color:#b45309;}</style>' +
         '</head><body>' +
         '<h1>지원서가 정상 접수되었습니다.</h1>' +
         '<p>담당교수인 김선철교수에게 아래와 같이 문자를 보내주세요</p>' +
-        '<p>OOO 온라인 접수하였습니다</p>' +
+        '<p>' + safeName + ' 온라인 접수하였습니다</p>' +
         '<p class="tel">김선철교수 HP : 010-8596-3770</p>' +
         '</body></html>'
     );
