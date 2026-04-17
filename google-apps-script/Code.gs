@@ -1,6 +1,5 @@
-const SPREADSHEET_ID = '여기에_구글시트_ID를_넣으십시오';
+const SPREADSHEET_ID = '1R_hGz6bufwQhDxP9u7jgipwPQHNwPkFp327JFhMsYio';
 const SHEET_NAME = '지원서';
-const SUCCESS_URL = 'https://mra-admission-form.vercel.app/success.html';
 const FORM_URL = 'https://mra-admission-form.vercel.app/apply.html';
 const ALERT_EMAIL = 'sckim223@gmail.com';
 
@@ -15,8 +14,8 @@ function doGet(e) {
 
 function doPost(e) {
   try {
-    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
-    if (!sheet) throw new Error('시트 "' + SHEET_NAME + '"를 찾을 수 없습니다.');
+    const sheet = getTargetSheet_();
+    ensureHeader_(sheet);
 
     const submittedAt = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss');
 
@@ -31,6 +30,7 @@ function doPost(e) {
     const otherReason = getParamAny_(e, ['otherReason', 'motivationOther']);
     const privacyConsent = getParamAny_(e, ['privacyConsent', 'privacy']);
 
+    // 1) 지원서 시트 저장
     sheet.appendRow([
       submittedAt,
       name,
@@ -45,8 +45,8 @@ function doPost(e) {
       privacyConsent,
     ]);
 
+    // 2) 접수 알림 메일 발송
     const subject = '[MRA 지원서 접수] ' + (name || '이름없음') + ' / ' + (phone || '전화번호없음');
-
     const body =
       'MRA 온라인 입학지원서가 접수되었습니다.\n\n' +
       '접수일시: ' + submittedAt + '\n' +
@@ -69,11 +69,16 @@ function doPost(e) {
       replyTo: email || undefined,
     });
 
+    // 3) 접수 완료 최종 화면 출력
     return HtmlService.createHtmlOutput(
-      '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
-        '<meta http-equiv="refresh" content="0; url=' + SUCCESS_URL + '">' +
-        '<script>location.replace("' + SUCCESS_URL + '");</script>' +
-        '</head><body>접수 완료. 이동 중입니다.</body></html>'
+      '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>접수 완료</title>' +
+        '<style>body{font-family:"Malgun Gothic",sans-serif;line-height:1.8;padding:28px;color:#111827;}h1{font-size:28px;margin:0 0 14px;}p{font-size:20px;margin:0 0 8px;} .tel{font-weight:800;color:#b45309;}</style>' +
+        '</head><body>' +
+        '<h1>지원서가 정상 접수되었습니다.</h1>' +
+        '<p>담당교수인 김선철교수에게 아래와 같이 문자를 보내주세요</p>' +
+        '<p>OOO 온라인 접수하였습니다</p>' +
+        '<p class="tel">김선철교수 HP : 010-8596-3770</p>' +
+        '</body></html>'
     );
   } catch (error) {
     return HtmlService.createHtmlOutput(
@@ -83,6 +88,47 @@ function doPost(e) {
         '</body></html>'
     );
   }
+}
+
+function getTargetSheet_() {
+  const id = String(SPREADSHEET_ID || '').trim();
+
+  if (!id) {
+    throw new Error('스프레드시트 ID가 비어 있습니다. SPREADSHEET_ID 값을 확인해 주세요.');
+  }
+
+  if (!/^[a-zA-Z0-9_-]{30,}$/.test(id)) {
+    throw new Error('스프레드시트 ID 형식이 올바르지 않습니다. SPREADSHEET_ID 값을 다시 확인해 주세요.');
+  }
+
+  const ss = SpreadsheetApp.openById(id);
+  const sheet = ss.getSheetByName(SHEET_NAME);
+
+  if (!sheet) {
+    throw new Error('시트 "' + SHEET_NAME + '"를 찾을 수 없습니다.');
+  }
+
+  return sheet;
+}
+
+function ensureHeader_(sheet) {
+  if (sheet.getLastRow() > 0) {
+    return;
+  }
+
+  sheet.appendRow([
+    '접수일시',
+    '성명',
+    '휴대전화',
+    '이메일',
+    '생년월일',
+    '소속',
+    '공인중개사자격',
+    '4년제대학졸업여부',
+    '지원동기',
+    '기타사유',
+    '개인정보동의',
+  ]);
 }
 
 function getParam_(e, key) {
@@ -109,6 +155,16 @@ function escapeHtml_(text) {
     .replace(/'/g, '&#39;');
 }
 
-function testMailPermission_() {
+function testMailPermission() {
   MailApp.sendEmail('sckim223@gmail.com', 'MRA 메일 권한 테스트', '권한 승인 테스트입니다.');
+}
+
+function resetApplicationSheet() {
+  const sheet = getTargetSheet_();
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+
+  if (lastRow > 1 && lastCol > 0) {
+    sheet.getRange(2, 1, lastRow - 1, lastCol).clearContent();
+  }
 }
