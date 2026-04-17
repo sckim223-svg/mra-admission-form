@@ -1,4 +1,3 @@
-const SPREADSHEET_ID = '1R_hGz6bufwQhDxP9u7jgipwPQHNwPkFp327JFhMsYio';
 const SHEET_NAME = '지원서';
 const FORM_URL = 'https://mra-admission-form.vercel.app/apply.html';
 const ALERT_EMAIL = 'sckim223@gmail.com';
@@ -91,19 +90,12 @@ function doPost(e) {
 }
 
 function getTargetSheet_() {
-  const id = String(SPREADSHEET_ID || '').trim();
-
-  if (!id) {
-    throw new Error('스프레드시트 ID가 비어 있습니다. SPREADSHEET_ID 값을 확인해 주세요.');
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error('바운드된 스프레드시트를 찾을 수 없습니다. 스프레드시트에 바운드된 Apps Script인지 확인해 주세요.');
   }
 
-  if (!/^[a-zA-Z0-9_-]{30,}$/.test(id)) {
-    throw new Error('스프레드시트 ID 형식이 올바르지 않습니다. SPREADSHEET_ID 값을 다시 확인해 주세요.');
-  }
-
-  const ss = SpreadsheetApp.openById(id);
   const sheet = ss.getSheetByName(SHEET_NAME);
-
   if (!sheet) {
     throw new Error('시트 "' + SHEET_NAME + '"를 찾을 수 없습니다.');
   }
