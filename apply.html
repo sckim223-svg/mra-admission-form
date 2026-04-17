@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>온라인 지원서 작성</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="apply.js" defer></script>
+  </head>
+  <body>
+    <main class="container">
+      <section class="card">
+        <h1>온라인 지원서 작성</h1>
+        <p class="help-text">아래 항목을 입력한 후 제출 버튼을 눌러주세요.</p>
+        <p class="eligibility-note">
+          입학지원 자격: <strong>공인중개사 자격 보유자만 지원 가능</strong>
+        </p>
+
+        <form
+          id="applicationForm"
+          class="application-form"
+          action="https://script.google.com/macros/s/AKfycbxb369-hV_my_m3MiquRbmaUyZMfhGOLcTggPod8Vp9ANOPLcxA4sYPcIKehpSOep47MA/exec"
+          method="POST"
+        >
+          <div class="form-field">
+            <label for="name">성명</label>
+            <input id="name" name="name" type="text" required />
+          </div>
+
+          <div class="form-field">
+            <label for="phone">휴대전화</label>
+            <input id="phone" name="phone" type="tel" placeholder="예: 010-1234-5678" required />
+          </div>
+
+          <div class="form-field">
+            <label for="email">이메일</label>
+            <input id="email" name="email" type="email" required />
+          </div>
+
+          <div class="form-field">
+            <label for="birth">생년월일</label>
+            <input id="birth" name="birth" type="date" required />
+          </div>
+
+          <div class="form-field">
+            <label for="company">소속 중개사무소 또는 회사명</label>
+            <input id="company" name="company" type="text" required />
+          </div>
+
+          <div class="form-field">
+            <label for="license">공인중개사 자격 여부</label>
+            <select id="license" name="license" required>
+              <option value="">선택해 주세요</option>
+              <option value="보유">보유</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="degree">4년제 대학 졸업(예정) 여부</label>
+            <select id="degree" name="degree" required>
+              <option value="">선택해 주세요</option>
+              <option value="졸업">졸업</option>
+              <option value="졸업예정">졸업예정</option>
+              <option value="해당 없음">해당 없음</option>
+            </select>
+          </div>
+
+          <fieldset class="radio-group">
+            <legend>지원동기 (객관식)</legend>
+            <label><input type="radio" name="motivation" value="전문지식 습득" required /> 전문지식 습득</label>
+            <label><input type="radio" name="motivation" value="실무역량 강화" required /> 실무역량 강화</label>
+            <label><input type="radio" name="motivation" value="사업화·수익모델 확장" required /> 사업화·수익모델 확장</label>
+            <label><input type="radio" name="motivation" value="네트워크 형성" required /> 네트워크 형성</label>
+            <label><input type="radio" name="motivation" value="기타" required /> 기타</label>
+          </fieldset>
+
+          <div id="motivationOtherField" class="form-field hidden-field">
+            <label for="motivationOther">기타 사유 입력</label>
+            <input id="motivationOther" name="motivationOther" type="text" placeholder="간단히 입력해 주세요" />
+          </div>
+
+          <label class="checkbox-row" for="privacy">
+            <input id="privacy" name="privacy" type="checkbox" required />
+            개인정보 수집 및 이용에 동의합니다. (지원서 구글시트 접수 및 입학 전형 심사 안내 목적)
+          </label>
+
+          <p id="formMessage" class="form-message" role="alert" aria-live="polite"></p>
+
+          <button id="submitButton" class="cta-button" type="submit">지원서 제출하기</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
